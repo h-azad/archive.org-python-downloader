@@ -143,6 +143,7 @@ def download(session, n_threads, directory, links, scale, book_id):
 	return images
 
 def make_pdf(pdf, title, directory):
+	directory = 'downloads/'+directory
 	file = title+".pdf"
 	# Handle the case where multiple books with the same name are downloaded
 	i = 1
