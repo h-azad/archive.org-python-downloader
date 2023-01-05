@@ -142,6 +142,30 @@ def download(session, n_threads, directory, links, scale, book_id):
 	images = [image_name(pages, i, directory) for i in range(len(links))]
 	return images
 
+def repackPdf(directory, title="Repacked.pdf"):
+		import img2pdf
+		dirname = directory
+		imgs = []
+
+		outputDir = os.getcwd()+'/pdf'
+		if os.path.isdir(outputDir)==False:
+			os.mkdir(outputDir)
+
+		if os.path.isdir(directory):
+			for fname in os.listdir(dirname):
+				if not fname.endswith(".jpg"):
+					continue
+				path = os.path.join(dirname, fname)
+				if os.path.isdir(path):
+					continue
+				imgs.append(path)
+			with open(os.path.join(outputDir, title+'.pdf'), "wb") as f:
+				f.write(img2pdf.convert(imgs))
+		else:
+			print(f"Directory {directory} not found")
+			exit()
+
+
 def make_pdf(pdf, title, directory):
 	directory = 'downloads/'+directory
 	file = title+".pdf"
@@ -158,8 +182,9 @@ def make_pdf(pdf, title, directory):
 if __name__ == "__main__":
 
 	my_parser = argparse.ArgumentParser()
-	my_parser.add_argument('-e', '--email', help='Your archive.org email', type=str, required=True)
-	my_parser.add_argument('-p', '--password', help='Your archive.org password', type=str, required=True)
+	my_parser.add_argument('-rp', '--repack', help='Repack file', type=str, required=False)
+	my_parser.add_argument('-e', '--email', help='Your archive.org email', type=str, required=False)
+	my_parser.add_argument('-p', '--password', help='Your archive.org password', type=str, required=False)
 	my_parser.add_argument('-u', '--url', help='Link to the book (https://archive.org/details/XXXX). You can use this argument several times to download multiple books', action='append', type=str)
 	my_parser.add_argument('-d', '--dir', help='Output directory', type=str)
 	my_parser.add_argument('-f', '--file', help='File where are stored the URLs of the books to download', type=str)
@@ -167,10 +192,17 @@ if __name__ == "__main__":
 	my_parser.add_argument('-t', '--threads', help="Maximum number of threads, [default 50]", type=int, default=50)
 	my_parser.add_argument('-j', '--jpg', help="Output to individual JPG's rather than a PDF", action='store_true')
 
+	
 	if len(sys.argv) == 1:
 		my_parser.print_help(sys.stderr)
 		sys.exit(1)
 	args = my_parser.parse_args()
+
+	if args.repack:
+		dr = os.path.join(os.getcwd(), args.repack)
+		repackPdf(dr, args.repack)
+		print("Pdf repacked")
+		exit()
 
 	if args.url is None and args.file is None:
 		my_parser.error("At least one of --url and --file required")
